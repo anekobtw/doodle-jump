@@ -14,14 +14,9 @@
 #define JUMP_HEIGHT 10
 
 int main() {
-  srand(time(NULL));
+  // Window and the box
   initscr();
-  noecho();
-  curs_set(0);
-
-  // Window
   WINDOW* win = newwin(WIN_Y, WIN_X, 0, 0);
-  keypad(win, TRUE);
   if (win == NULL) {
     endwin();
     printf("Window couldn't be drawn because the terminal is too small");
@@ -32,33 +27,55 @@ int main() {
   refresh();
   wrefresh(win);
 
+  // Config
+  srand(time(NULL));
+  noecho();
+  curs_set(0);
+  keypad(win, TRUE);
+  nodelay(win, TRUE);
+  cbreak();
+
   // Player
   Player player = {WIN_X / 2, WIN_Y / 4, PLAYER_CHAR};
   draw_player(win, &player);
 
   // Game loop
   bool exit = false;
-  nodelay(win, TRUE);
-  cbreak();
   Platform platforms[PLATFORM_COUNT_MAX];
   int curr_plat_count = 0;
   int gravity_tick = 0;
+  int horizontal_dx = 0;
 
   while (!exit) {
-    switch (wgetch(win)) {
-      case KEY_UP:
-        move_player(win, &player, 0, 2);
-        break;
-      case KEY_RIGHT:
-        move_player(win, &player, 2, 0);
-        break;
-      case KEY_LEFT:
-        move_player(win, &player, -2, 0);
-        break;
-      case 27:
-        exit = true;
-        break;  // escape
+    bool left_pressed = false;
+    bool right_pressed = false;
+    int ch;
+
+    while ((ch = wgetch(win)) != ERR) {
+      switch (ch) {
+        case KEY_UP:
+          move_player(win, &player, 0, 2);
+          break;
+        case KEY_RIGHT:
+          right_pressed = true;
+          break;
+        case KEY_LEFT:
+          left_pressed = true;
+          break;
+        case 27:
+          exit = true;
+          break;  // escape
+      }
     }
+
+    if (right_pressed && !left_pressed)
+      horizontal_dx = 2;
+    else if (left_pressed && !right_pressed)
+      horizontal_dx = -2;
+    else
+      horizontal_dx = 0;
+
+    move_player(win, &player, horizontal_dx, 0);
 
     if (curr_plat_count < PLATFORM_COUNT_MAX) {
       platforms[curr_plat_count] = create_random_platform(false);
