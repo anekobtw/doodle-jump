@@ -3,6 +3,9 @@
 
 #include <ncurses.h>
 
+#define WIN_X 60
+#define WIN_Y 30
+
 #define PLAYER_CHAR '0'
 
 typedef struct {

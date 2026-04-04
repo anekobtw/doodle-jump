@@ -1,8 +1,5 @@
 #include "platform.h"
 
-#include <stdlib.h>
-#include <time.h>
-
 void draw_platform(WINDOW* win, Platform* p) {
   for (int i = 1; i <= p->length; i++) {
     if (p->x + i > 1 && p->x + i < WIN_X - 1) {
@@ -31,9 +28,12 @@ void move_platform(WINDOW* win, Platform* p, int dx, int dy) {
   wrefresh(win);
 }
 
-Platform create_random_platform() {
+Platform create_random_platform(bool on_top) {
   Platform p;
-  p.y = 1 + rand() % (WIN_Y - 2);
+  if (on_top)
+    p.y = 1;
+  else
+    p.y = 1 + rand() % (WIN_Y - 2);
   p.x = 1 + rand() % (WIN_X - 2);
   p.length = 3 + rand() % 3;
   p.symbol = PLATFORM_CHAR;

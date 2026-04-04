@@ -10,7 +10,7 @@
 #define WIN_Y 30
 
 #define PLATFORM_COUNT_MAX 10
-#define GRAVITY_TICKS 8*PLATFORM_COUNT_MAX
+#define GRAVITY_TICKS 8 * PLATFORM_COUNT_MAX
 #define JUMP_HEIGHT 10
 
 int main() {
@@ -47,13 +47,13 @@ int main() {
   while (!exit) {
     switch (wgetch(win)) {
       case KEY_UP:
-        move_player(win, &player, 0, 1);
+        move_player(win, &player, 0, 2);
         break;
       case KEY_RIGHT:
-        move_player(win, &player, 1, 0);
+        move_player(win, &player, 2, 0);
         break;
       case KEY_LEFT:
-        move_player(win, &player, -1, 0);
+        move_player(win, &player, -2, 0);
         break;
       case 27:
         exit = true;
@@ -61,7 +61,7 @@ int main() {
     }
 
     if (curr_plat_count < PLATFORM_COUNT_MAX) {
-      platforms[curr_plat_count] = create_random_platform();
+      platforms[curr_plat_count] = create_random_platform(false);
       draw_platform(win, &platforms[curr_plat_count]);
       curr_plat_count++;
     }
@@ -73,7 +73,12 @@ int main() {
         move_player(win, &player, 0, JUMP_HEIGHT);
         if (player.y <= WIN_Y / 2) {
           for (int i = 0; i < curr_plat_count; i++) {
-            move_platform(win, &platforms[i], 0, -1);
+            move_platform(win, &platforms[i], 0, -2);
+          }
+          if ((rand() % 4) < 3) {
+            platforms[curr_plat_count] = create_random_platform(true);
+            draw_platform(win, &platforms[curr_plat_count]);
+            curr_plat_count++;
           }
         }
         gravity_tick = 0;
