@@ -39,7 +39,6 @@ int main() {
 
   // Player
   Player player = {WIN_X / 2, WIN_Y / 4, PLAYER_CHAR};
-  draw_player(win, &player);
 
   // Some variables
   Platform platforms[PLATFORMS_COUNT_MAX];
@@ -49,7 +48,6 @@ int main() {
   // Create inital platforms before starting the game loop
   for (size_t i = 0; i < PLATFORMS_COUNT_MAX; i++) {
     platforms[curr_plat_count] = create_random_platform(false);
-    draw_platform(win, &platforms[curr_plat_count]);
     curr_plat_count++;
   }
 
@@ -74,10 +72,7 @@ int main() {
       }
     }
 
-    if (horizontal_dx != 0) {
-      move_player(win, &player, horizontal_dx, 0);
-      redraw_platforms(win, platforms, curr_plat_count);
-    }
+    if (horizontal_dx != 0) move_player(win, &player, horizontal_dx, 0);
 
     // Check if a player is on a platform
     // clang-format off
@@ -93,27 +88,29 @@ int main() {
     // clang-format on
 
     if (on_platform) {
+      // if a player on platform, then jump
       move_player(win, &player, 0, JUMP_HEIGHT);
-      redraw_platforms(win, platforms, curr_plat_count);
 
+      // move platforms down and replace them with new ones if needed
       if (player.y <= WIN_Y / 2) {
         for (size_t i = 0; i < curr_plat_count; i++) {
           move_platform(win, &platforms[i], 0, -2);
           if (platforms[i].y == WIN_Y - 2) {
-            erase_platform(win, &platforms[i]);
             platforms[i] = create_random_platform(true);
-            draw_platform(win, &platforms[i]);
           }
         }
       }
     } else {
       if (gravity_tick >= GRAVITY_TICKS_MAX) {
         move_player(win, &player, 0, -1);
-        redraw_platforms(win, platforms, curr_plat_count);
         gravity_tick = 0;
       }
     }
 
+    werase(win);
+    box(win, 0, 0);
+    draw_player(win, &player);
+    redraw_platforms(win, platforms, curr_plat_count);
     wrefresh(win);
     napms(FRAME_DELAY_MS);
   }

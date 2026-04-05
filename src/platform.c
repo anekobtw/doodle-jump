@@ -23,7 +23,7 @@ void erase_platform(WINDOW* win, Platform* p) {
 }
 
 void move_platform(WINDOW* win, Platform* p, int dx, int dy) {
-  erase_platform(win, p);
+  (void)win;
 
   p->x += dx;
   p->y -= dy;
@@ -32,8 +32,6 @@ void move_platform(WINDOW* win, Platform* p, int dx, int dy) {
   if (p->x > WIN_X - 1 - p->length) p->x = WIN_X - 1 - p->length;
   if (p->y < 1) p->y = 1;
   if (p->y > WIN_Y - 2) p->y = WIN_Y - 2;
-
-  draw_platform(win, p);
 }
 
 Platform create_random_platform(bool on_top) {
