@@ -31,7 +31,7 @@ static void draw_hud(int score, bool game_over) {
   if (game_over) {
     lines[0] = "GAME OVER!";
     lines[1] = "Press R to restart";
-    lines[2] = " ";
+    lines[2] = "Press ESC to exit";
     lines[3] = " ";
     lines[4] = " ";
   } else {
@@ -50,6 +50,19 @@ static void draw_hud(int score, bool game_over) {
     move(i + 1, hud_x);
     clrtoeol();
     mvprintw(i + 1, hud_x, "%s", lines[i]);
+  }
+}
+
+void game_init(Player* p, Platform platforms[],
+               int* curr_plat_count, int* gravity_tick, int* score) {
+  *p = (Player){WIN_X / 2, WIN_Y / 4, PLAYER_CHAR};
+  *curr_plat_count = 0;
+  *gravity_tick = 0;
+  *score = 0;
+
+  for (size_t i = 0; i < PLATFORMS_COUNT_MAX; i++) {
+    platforms[i] = create_random_platform(false);
+    (*curr_plat_count)++;
   }
 }
 
@@ -74,21 +87,11 @@ int main() {
   keypad(win, TRUE);
   nodelay(win, TRUE);
   cbreak();
-
-  // Player
-  Player player = {WIN_X / 2, WIN_Y / 4, PLAYER_CHAR};
-
-  // Some variables
+  Player player;
   Platform platforms[PLATFORMS_COUNT_MAX];
-  int curr_plat_count = 0;
-  int gravity_tick = 0;
-  int score = 0;
+  int curr_plat_count, gravity_tick, score;
 
-  // Create inital platforms before starting the game loop
-  for (size_t i = 0; i < PLATFORMS_COUNT_MAX; i++) {
-    platforms[curr_plat_count] = create_random_platform(false);
-    curr_plat_count++;
-  }
+  game_init(&player, platforms, &curr_plat_count, &gravity_tick, &score);
 
   while (true) {
     gravity_tick++;
@@ -153,6 +156,13 @@ int main() {
     // Update hud
     if (player.y == WIN_Y - 3) {
       draw_hud(score, true);
+      int ch = wgetch(win);
+      if (ch == 27) {
+        break;
+      } else if (ch == 82 || ch == 114) {
+        game_init(&player, platforms, &curr_plat_count, &gravity_tick,
+                  &score);
+      }
     } else {
       draw_hud(score, false);
     }
