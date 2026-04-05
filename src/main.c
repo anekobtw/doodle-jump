@@ -1,6 +1,6 @@
 #include <ncurses.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -17,21 +17,33 @@
 #define GRAVITY_TICKS_MAX 10
 #define JUMP_HEIGHT 10
 
-static void draw_hud(int score) {
-    const int hud_x = WIN_X + 2;
-    char score_text[32];
-    snprintf(score_text, sizeof(score_text), "Score: %d", score);
+static void draw_hud(int score, bool game_over) {
+  const int hud_x = WIN_X + 2;
+  char score_text[32];
+  snprintf(score_text, sizeof(score_text), "Score: %d", score);
 
-    const char *lines[] = { score_text, "<- -> Move", "ESC Quit" };
-    int n = sizeof(lines) / sizeof(lines[0]);
+  const char* lines[4];
+  if (game_over) {
+    lines[0] = "Doodle Jump - by anekobtw (2026)";
+    lines[1] = score_text;
+    lines[2] = "Arrow keys: Move left/right";
+    lines[3] = "ESC: Quit the game";
+  } else {
+    lines[0] = "GAME OVER!";
+    lines[1] = "Press R to restart";
+    lines[2] = " ";
+    lines[3] = " ";
+  }
 
-    if (LINES < n + 1 || COLS <= hud_x + 10) return;
+  int n = sizeof(lines) / sizeof(lines[0]);
 
-    for (int i = 0; i < n; i++) {
-        move(i + 1, hud_x);
-        clrtoeol();
-        mvprintw(i + 1, hud_x, "%s", lines[i]);
-    }
+  if (LINES < n + 1 || COLS <= hud_x + 10) return;
+
+  for (int i = 0; i < n; i++) {
+    move(i + 1, hud_x);
+    clrtoeol();
+    mvprintw(i + 1, hud_x, "%s", lines[i]);
+  }
 }
 
 int main() {
@@ -108,16 +120,19 @@ int main() {
     // clang-format on
 
     if (on_platform) {
-      // if a player on platform, then jump
-      move_player(win, &player, 0, JUMP_HEIGHT);
       score++;
 
-      // move platforms down and replace them with new ones if needed
-      if (player.y <= WIN_Y / 2) {
-        for (size_t i = 0; i < curr_plat_count; i++) {
-          move_platform(win, &platforms[i], 0, -2);
-          if (platforms[i].y == WIN_Y - 2) {
-            platforms[i] = create_random_platform(true);
+      for (size_t i = 0; i < 5; i++) {
+        // if a player on platform, then jump
+        move_player(win, &player, 0, 1);
+
+        // move platforms down and replace them with new ones if needed
+        if (player.y <= WIN_Y / 2) {
+          for (size_t i = 0; i < curr_plat_count; i++) {
+            move_platform(win, &platforms[i], 0, -1);
+            if (platforms[i].y == WIN_Y - 2) {
+              platforms[i] = create_random_platform(true);
+            }
           }
         }
       }
@@ -128,11 +143,16 @@ int main() {
       }
     }
 
+    // Check if a player is dead
+    if (player.y == WIN_Y - 1) {
+      draw_hud(score, true);
+    }
+
     werase(win);
     box(win, 0, 0);
     draw_player(win, &player);
     redraw_platforms(win, platforms, curr_plat_count);
-    draw_hud(score);
+    draw_hud(score, false);
     refresh();
     wrefresh(win);
     napms(FRAME_DELAY_MS);
