@@ -7,6 +7,7 @@
 
 #include "platform.h"
 #include "player.h"
+#include "stats.h"
 
 #define WIN_X 60
 #define WIN_Y 30
@@ -21,19 +22,24 @@
 static void draw_hud(int score, bool game_over) {
   const int hud_x = WIN_X + 2;
   char score_text[32];
+  char best_score_text[32];
+  const char* lines[5];
   snprintf(score_text, sizeof(score_text), "Score: %d", score);
+  snprintf(best_score_text, sizeof(best_score_text), "Best score: %d",
+           load_bestscore());
 
-  const char* lines[4];
   if (game_over) {
     lines[0] = "GAME OVER!";
     lines[1] = "Press R to restart";
     lines[2] = " ";
     lines[3] = " ";
+    lines[4] = " ";
   } else {
-    lines[0] = "Doodle Jump - by anekobtw (2026)";
+    lines[0] = "Doodle Jump (c) anekobtw, 2026";
     lines[1] = score_text;
-    lines[2] = "Arrow keys: Move left/right";
-    lines[3] = "ESC: Quit the game";
+    lines[2] = best_score_text;
+    lines[3] = "Arrow keys: Move left/right";
+    lines[4] = "ESC: Quit the game";
   }
 
   int n = sizeof(lines) / sizeof(lines[0]);
@@ -121,14 +127,14 @@ int main() {
     // clang-format on
 
     if (on_platform) {
-      score++;
-
       for (size_t i = 0; i < JUMP_STEPS; i++) {
         // if a player on platform, then jump
         move_player(win, &player, 0, 1);
 
         // move platforms down and replace them with new ones if needed
         if (player.y <= WIN_Y / 2 && i < PLATFORM_SCROLL_STEPS) {
+          score++;
+
           for (size_t j = 0; j < curr_plat_count; j++) {
             move_platform(win, &platforms[j], 0, -1);
             if (platforms[j].y == WIN_Y - 2) {
@@ -144,11 +150,12 @@ int main() {
       }
     }
 
-    // Check if a player is dead
-    if (player.y == WIN_Y - 3)
+    // Update hud
+    if (player.y == WIN_Y - 3) {
       draw_hud(score, true);
-    else
+    } else {
       draw_hud(score, false);
+    }
 
     werase(win);
     box(win, 0, 0);
@@ -157,6 +164,7 @@ int main() {
     refresh();
     wrefresh(win);
     napms(FRAME_DELAY_MS);
+    save(score);
   }
 
   endwin();
