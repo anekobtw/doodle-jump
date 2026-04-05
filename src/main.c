@@ -1,6 +1,8 @@
 #include <ncurses.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "platform.h"
@@ -14,6 +16,23 @@
 #define PLATFORMS_COUNT_MAX 10
 #define GRAVITY_TICKS_MAX 10
 #define JUMP_HEIGHT 10
+
+static void draw_hud(int score) {
+    const int hud_x = WIN_X + 2;
+    char score_text[32];
+    snprintf(score_text, sizeof(score_text), "Score: %d", score);
+
+    const char *lines[] = { score_text, "<- -> Move", "ESC Quit" };
+    int n = sizeof(lines) / sizeof(lines[0]);
+
+    if (LINES < n + 1 || COLS <= hud_x + 10) return;
+
+    for (int i = 0; i < n; i++) {
+        move(i + 1, hud_x);
+        clrtoeol();
+        mvprintw(i + 1, hud_x, "%s", lines[i]);
+    }
+}
 
 int main() {
   // Window and the box
@@ -44,6 +63,7 @@ int main() {
   Platform platforms[PLATFORMS_COUNT_MAX];
   int curr_plat_count = 0;
   int gravity_tick = 0;
+  int score = 0;
 
   // Create inital platforms before starting the game loop
   for (size_t i = 0; i < PLATFORMS_COUNT_MAX; i++) {
@@ -90,6 +110,7 @@ int main() {
     if (on_platform) {
       // if a player on platform, then jump
       move_player(win, &player, 0, JUMP_HEIGHT);
+      score++;
 
       // move platforms down and replace them with new ones if needed
       if (player.y <= WIN_Y / 2) {
@@ -111,6 +132,8 @@ int main() {
     box(win, 0, 0);
     draw_player(win, &player);
     redraw_platforms(win, platforms, curr_plat_count);
+    draw_hud(score);
+    refresh();
     wrefresh(win);
     napms(FRAME_DELAY_MS);
   }
