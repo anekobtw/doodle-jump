@@ -9,6 +9,8 @@
 #define WIN_X 60
 #define WIN_Y 30
 
+#define FRAME_DELAY_MS 15  // more = game slower, less = game faster
+
 #define PLATFORMS_COUNT_MAX 10
 #define GRAVITY_TICKS_MAX 10
 #define JUMP_HEIGHT 10
@@ -72,7 +74,10 @@ int main() {
       }
     }
 
-    if (horizontal_dx != 0) move_player(win, &player, horizontal_dx, 0);
+    if (horizontal_dx != 0) {
+      move_player(win, &player, horizontal_dx, 0);
+      redraw_platforms(win, platforms, curr_plat_count);
+    }
 
     // Check if a player is on a platform
     // clang-format off
@@ -89,6 +94,7 @@ int main() {
 
     if (on_platform) {
       move_player(win, &player, 0, JUMP_HEIGHT);
+      redraw_platforms(win, platforms, curr_plat_count);
 
       if (player.y <= WIN_Y / 2) {
         for (size_t i = 0; i < curr_plat_count; i++) {
@@ -103,12 +109,13 @@ int main() {
     } else {
       if (gravity_tick >= GRAVITY_TICKS_MAX) {
         move_player(win, &player, 0, -1);
+        redraw_platforms(win, platforms, curr_plat_count);
         gravity_tick = 0;
       }
     }
 
     wrefresh(win);
-    napms(20);
+    napms(FRAME_DELAY_MS);
   }
 
   endwin();

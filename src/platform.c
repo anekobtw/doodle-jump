@@ -8,6 +8,12 @@ void draw_platform(WINDOW* win, Platform* p) {
   }
 };
 
+void redraw_platforms(WINDOW* win, Platform platforms[], int count) {
+  for (int i = 0; i < count; i++) {
+    draw_platform(win, &platforms[i]);
+  }
+}
+
 void erase_platform(WINDOW* win, Platform* p) {
   for (int i = 1; i <= p->length; i++) {
     if (p->x + i > 1 && p->x + i < WIN_X - 1) {

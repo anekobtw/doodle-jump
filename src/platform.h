@@ -18,6 +18,7 @@ typedef struct {
 } Platform;
 
 void draw_platform(WINDOW* win, Platform* p);
+void redraw_platforms(WINDOW* win, Platform platforms[], int count);
 void erase_platform(WINDOW* win, Platform* p);
 void move_platform(WINDOW* win, Platform* p, int dx, int dy);
 Platform create_random_platform(bool on_top);
