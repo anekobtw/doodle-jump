@@ -41,7 +41,7 @@ void move_player(WINDOW* win, Player* p, int dx, int dy) {
       draw_player_at(win, new_x, new_y, p->symbol);
       box(win, 0, 0);
       wrefresh(win);
-      napms(20);
+      napms(8);
       last_x = new_x;
       last_y = new_y;
     }

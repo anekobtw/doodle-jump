@@ -1,0 +1,4 @@
+- score and best score
+- end the game when player falls
+- add breakable, moving, and fake platform
+- maybe add some velocity?

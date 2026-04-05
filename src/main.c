@@ -11,11 +11,12 @@
 #define WIN_X 60
 #define WIN_Y 30
 
-#define FRAME_DELAY_MS 15  // more = game slower, less = game faster
+#define FRAME_DELAY_MS 15     // more = game slower, less = game faster
+#define GRAVITY_TICKS_MAX 10  // more = gravity weaker, less = gravity stronger
 
 #define PLATFORMS_COUNT_MAX 10
-#define GRAVITY_TICKS_MAX 10
-#define JUMP_HEIGHT 10
+#define JUMP_STEPS 5
+#define PLATFORM_SCROLL_STEPS 2
 
 static void draw_hud(int score, bool game_over) {
   const int hud_x = WIN_X + 2;
@@ -122,16 +123,16 @@ int main() {
     if (on_platform) {
       score++;
 
-      for (size_t i = 0; i < 5; i++) {
+      for (size_t i = 0; i < JUMP_STEPS; i++) {
         // if a player on platform, then jump
         move_player(win, &player, 0, 1);
 
         // move platforms down and replace them with new ones if needed
-        if (player.y <= WIN_Y / 2) {
-          for (size_t i = 0; i < curr_plat_count; i++) {
-            move_platform(win, &platforms[i], 0, -1);
-            if (platforms[i].y == WIN_Y - 2) {
-              platforms[i] = create_random_platform(true);
+        if (player.y <= WIN_Y / 2 && i < PLATFORM_SCROLL_STEPS) {
+          for (size_t j = 0; j < curr_plat_count; j++) {
+            move_platform(win, &platforms[j], 0, -1);
+            if (platforms[j].y == WIN_Y - 2) {
+              platforms[j] = create_random_platform(true);
             }
           }
         }
