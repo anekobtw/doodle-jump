@@ -6,15 +6,18 @@ void draw_platform(WINDOW* win, Platform* p) {
       mvwaddch(win, p->y, p->x + i, p->symbol);
     }
   }
-  wrefresh(win);
 };
 
-void move_platform(WINDOW* win, Platform* p, int dx, int dy) {
+void erase_platform(WINDOW* win, Platform* p) {
   for (int i = 1; i <= p->length; i++) {
     if (p->x + i > 1 && p->x + i < WIN_X - 1) {
       mvwaddch(win, p->y, p->x + i, ' ');
     }
   }
+}
+
+void move_platform(WINDOW* win, Platform* p, int dx, int dy) {
+  erase_platform(win, p);
 
   p->x += dx;
   p->y -= dy;
@@ -25,7 +28,6 @@ void move_platform(WINDOW* win, Platform* p, int dx, int dy) {
   if (p->y > WIN_Y - 2) p->y = WIN_Y - 2;
 
   draw_platform(win, p);
-  wrefresh(win);
 }
 
 Platform create_random_platform(bool on_top) {

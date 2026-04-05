@@ -13,7 +13,6 @@ typedef struct {
   char symbol;
 } Player;
 
-void clamp_player(Player* p);
 void draw_player(WINDOW* win, Player* p);
 void move_player(WINDOW* win, Player* p, int dx, int dy);
 

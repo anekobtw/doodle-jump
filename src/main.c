@@ -9,8 +9,8 @@
 #define WIN_X 60
 #define WIN_Y 30
 
-#define PLATFORM_COUNT_MAX 10
-#define GRAVITY_TICKS 8 * PLATFORM_COUNT_MAX
+#define PLATFORMS_COUNT_MAX 10
+#define GRAVITY_TICKS_MAX 10
 #define JUMP_HEIGHT 10
 
 int main() {
@@ -39,76 +39,75 @@ int main() {
   Player player = {WIN_X / 2, WIN_Y / 4, PLAYER_CHAR};
   draw_player(win, &player);
 
-  // Game loop
-  bool exit = false;
-  Platform platforms[PLATFORM_COUNT_MAX];
+  // Some variables
+  Platform platforms[PLATFORMS_COUNT_MAX];
   int curr_plat_count = 0;
   int gravity_tick = 0;
-  int horizontal_dx = 0;
 
-  while (!exit) {
-    bool left_pressed = false;
-    bool right_pressed = false;
+  // Create inital platforms before starting the game loop
+  for (size_t i = 0; i < PLATFORMS_COUNT_MAX; i++) {
+    platforms[curr_plat_count] = create_random_platform(false);
+    draw_platform(win, &platforms[curr_plat_count]);
+    curr_plat_count++;
+  }
+
+  while (true) {
+    gravity_tick++;
+
+    // Check for input
+    int horizontal_dx = 0;
     int ch;
-
     while ((ch = wgetch(win)) != ERR) {
       switch (ch) {
-        case KEY_UP:
-          move_player(win, &player, 0, 2);
-          break;
         case KEY_RIGHT:
-          right_pressed = true;
+          horizontal_dx = 2;
           break;
         case KEY_LEFT:
-          left_pressed = true;
+          horizontal_dx = -2;
           break;
-        case 27:
-          exit = true;
-          break;  // escape
+        case 27:  // escape
+          endwin();
+          return 0;
+          break;
       }
     }
 
-    if (right_pressed && !left_pressed)
-      horizontal_dx = 2;
-    else if (left_pressed && !right_pressed)
-      horizontal_dx = -2;
-    else
-      horizontal_dx = 0;
+    if (horizontal_dx != 0) move_player(win, &player, horizontal_dx, 0);
 
-    move_player(win, &player, horizontal_dx, 0);
-
-    if (curr_plat_count < PLATFORM_COUNT_MAX) {
-      platforms[curr_plat_count] = create_random_platform(false);
-      draw_platform(win, &platforms[curr_plat_count]);
-      curr_plat_count++;
-    }
-
-    for (int i = 0; i < curr_plat_count; i++) {
-      if (player.y + 2 == platforms[i].y && player.x >= platforms[i].x + 1 &&
+    // Check if a player is on a platform
+    // clang-format off
+    bool on_platform = false;
+    for (size_t i = 0; i < curr_plat_count; i++) {
+      if (player.y + 2 == platforms[i].y &&
+          player.x >= platforms[i].x + 1 &&
           player.x <= platforms[i].x + platforms[i].length) {
-        // The player is on some platform
-        move_player(win, &player, 0, JUMP_HEIGHT);
-        if (player.y <= WIN_Y / 2) {
-          for (int i = 0; i < curr_plat_count; i++) {
-            move_platform(win, &platforms[i], 0, -2);
-          }
-          if ((rand() % 4) < 3) {
-            platforms[curr_plat_count] = create_random_platform(true);
-            draw_platform(win, &platforms[curr_plat_count]);
-            curr_plat_count++;
-          }
-        }
-        gravity_tick = 0;
+        on_platform = true;
         break;
-      } else {
-        gravity_tick++;
-        if (gravity_tick >= GRAVITY_TICKS) {
-          move_player(win, &player, 0, -1);
-          gravity_tick = 0;
+      }
+    }
+    // clang-format on
+
+    if (on_platform) {
+      move_player(win, &player, 0, JUMP_HEIGHT);
+
+      if (player.y <= WIN_Y / 2) {
+        for (size_t i = 0; i < curr_plat_count; i++) {
+          move_platform(win, &platforms[i], 0, -2);
+          if (platforms[i].y == WIN_Y - 2) {
+            erase_platform(win, &platforms[i]);
+            platforms[i] = create_random_platform(true);
+            draw_platform(win, &platforms[i]);
+          }
         }
+      }
+    } else {
+      if (gravity_tick >= GRAVITY_TICKS_MAX) {
+        move_player(win, &player, 0, -1);
+        gravity_tick = 0;
       }
     }
 
+    wrefresh(win);
     napms(20);
   }
 

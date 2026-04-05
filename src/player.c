@@ -1,18 +1,18 @@
 #include "player.h"
 
-void erase_player_at(WINDOW* win, int x, int y) {
+static void erase_player_at(WINDOW* win, int x, int y) {
   mvwaddch(win, y - 1, x, ' ');
   mvwaddch(win, y, x, ' ');
   mvwaddch(win, y + 1, x, ' ');
 }
 
-void draw_player_at(WINDOW* win, int x, int y, char symbol) {
+static void draw_player_at(WINDOW* win, int x, int y, char symbol) {
   mvwaddch(win, y - 1, x, symbol);
   mvwaddch(win, y, x, symbol);
   mvwaddch(win, y + 1, x, symbol);
 }
 
-void clamp_player(Player* p) {
+static void clamp_player(Player* p) {
   if (p->x < 3) p->x = 3;
   if (p->x > WIN_X - 2) p->x = WIN_X - 2;
   if (p->y < 2) p->y = 2;
@@ -21,19 +21,18 @@ void clamp_player(Player* p) {
 
 void draw_player(WINDOW* win, Player* p) {
   clamp_player(p);
-  mvwaddch(win, p->y - 1, p->x, p->symbol);
-  mvwaddch(win, p->y, p->x, p->symbol);
-  mvwaddch(win, p->y + 1, p->x, p->symbol);
-  wrefresh(win);
+  draw_player_at(win, p->x, p->y, p->symbol);
 }
 
 void move_player(WINDOW* win, Player* p, int dx, int dy) {
   float cur_x = p->x, cur_y = p->y;
+  float step_x = (float)dx / 5;
+  float step_y = (float)dy / 5;
   int last_x = p->x, last_y = p->y;
 
   for (int i = 0; i < 5; i++) {
-    cur_x += (float)dx / 5;
-    cur_y -= (float)dy / 5;
+    cur_x += step_x;
+    cur_y -= step_y;
     int new_x = (int)cur_x;
     int new_y = (int)cur_y;
 
