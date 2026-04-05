@@ -30,9 +30,9 @@ static void draw_hud(int score, bool game_over) {
 
   if (game_over) {
     lines[0] = "GAME OVER!";
-    lines[1] = "Press R to restart";
-    lines[2] = "Press ESC to exit";
-    lines[3] = " ";
+    lines[1] = score_text;
+    lines[2] = "Press R to restart";
+    lines[3] = "Press ESC to exit";
     lines[4] = " ";
   } else {
     lines[0] = "Doodle Jump (c) anekobtw, 2026";
@@ -51,10 +51,12 @@ static void draw_hud(int score, bool game_over) {
     clrtoeol();
     mvprintw(i + 1, hud_x, "%s", lines[i]);
   }
+
+  refresh();
 }
 
-void game_init(Player* p, Platform platforms[],
-               int* curr_plat_count, int* gravity_tick, int* score) {
+void game_init(Player* p, Platform platforms[], int* curr_plat_count,
+               int* gravity_tick, int* score) {
   *p = (Player){WIN_X / 2, WIN_Y / 4, PLAYER_CHAR};
   *curr_plat_count = 0;
   *gravity_tick = 0;
@@ -156,12 +158,20 @@ int main() {
     // Update hud
     if (player.y == WIN_Y - 3) {
       draw_hud(score, true);
-      int ch = wgetch(win);
+      save(score);
+
+      nodelay(win, FALSE);
+      int ch;
+      do {
+        ch = wgetch(win);
+      } while (ch != 27 && ch != 'R' && ch != 'r');
+      nodelay(win, TRUE);
+
       if (ch == 27) {
         break;
-      } else if (ch == 82 || ch == 114) {
-        game_init(&player, platforms, &curr_plat_count, &gravity_tick,
-                  &score);
+      } else {
+        game_init(&player, platforms, &curr_plat_count, &gravity_tick, &score);
+        continue;
       }
     } else {
       draw_hud(score, false);
