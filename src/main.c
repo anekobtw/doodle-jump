@@ -14,8 +14,8 @@
 #define FRAME_DELAY_MS 15     // more = game slower, less = game faster
 #define GRAVITY_TICKS_MAX 10  // more = gravity weaker, less = gravity stronger
 
-#define PLATFORMS_COUNT_MAX 10
-#define JUMP_STEPS 5
+#define PLATFORMS_COUNT_MAX 15
+#define JUMP_STEPS 6
 #define PLATFORM_SCROLL_STEPS 2
 
 static void draw_hud(int score, bool game_over) {
@@ -25,15 +25,15 @@ static void draw_hud(int score, bool game_over) {
 
   const char* lines[4];
   if (game_over) {
-    lines[0] = "Doodle Jump - by anekobtw (2026)";
-    lines[1] = score_text;
-    lines[2] = "Arrow keys: Move left/right";
-    lines[3] = "ESC: Quit the game";
-  } else {
     lines[0] = "GAME OVER!";
     lines[1] = "Press R to restart";
     lines[2] = " ";
     lines[3] = " ";
+  } else {
+    lines[0] = "Doodle Jump - by anekobtw (2026)";
+    lines[1] = score_text;
+    lines[2] = "Arrow keys: Move left/right";
+    lines[3] = "ESC: Quit the game";
   }
 
   int n = sizeof(lines) / sizeof(lines[0]);
@@ -145,15 +145,15 @@ int main() {
     }
 
     // Check if a player is dead
-    if (player.y == WIN_Y - 1) {
+    if (player.y == WIN_Y - 3)
       draw_hud(score, true);
-    }
+    else
+      draw_hud(score, false);
 
     werase(win);
     box(win, 0, 0);
     draw_player(win, &player);
     redraw_platforms(win, platforms, curr_plat_count);
-    draw_hud(score, false);
     refresh();
     wrefresh(win);
     napms(FRAME_DELAY_MS);
